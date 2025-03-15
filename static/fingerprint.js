@@ -20,7 +20,7 @@
 
     console.log("📡 Données envoyées à l'API:", fingerprint);
 
-    // Envoyer empreinte numérique à FastAPI
+    // Envoyer fingerprint
     const responseFingerprint = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,7 +35,7 @@
         return;
     }
 
-    // Simulation d'une transaction liée à fingerprint_id
+    // Simulation d'une transaction avec le user_id récupéré
     const transaction = {
         user_agent: fingerprint.user_agent,
         ip_address: fingerprint.ip_address,
@@ -43,12 +43,13 @@
         screen_resolution: fingerprint.screen_resolution,
         language: fingerprint.language,
         transaction_type: Math.random() > 0.5 ? "purchase" : "refund",
-        amount: (Math.random() * 200).toFixed(2),
-        fingerprint_id: dataFingerprint.user_id // 👈 important !
+        amount: parseFloat((Math.random() * 200).toFixed(2)),
+        fingerprint_id: dataFingerprint.user_id  // IMPORTANT : lier l'empreinte à la transaction
     };
 
     console.log("📡 Données transaction envoyées à l'API:", transaction);
 
+    // Envoyer transaction
     const responseTransaction = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/transaction/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
