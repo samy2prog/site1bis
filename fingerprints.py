@@ -1,42 +1,36 @@
-import hashlib
-import json
+(async function() {
+    try {
+        // Récupérer les informations du navigateur
+        const fingerprint = {
+            user_agent: navigator.userAgent,
+            ip_address: await fetch('https://api64.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => data.ip)
+                .catch(() => '0.0.0.0'), // Fallback si l'IP ne peut pas être récupérée
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            screen_resolution: `${window.screen.width}x${window.screen.height}`,
+            language: navigator.language
+        };
 
-# Fonction pour générer un fingerprint unique basé sur IP, User-Agent et Session ID
-def generate_fingerprint(ip: str, user_agent: str, session_id: str) -> str:
-    data = f"{ip}-{user_agent}-{session_id}"
-    fingerprint = hashlib.sha256(data.encode()).hexdigest()
-    return fingerprint
+        console.log("🔍 Empreinte numérique collectée :", fingerprint);
 
-# Fonction pour sauvegarder les fingerprints générés dans un fichier JSON
-def save_fingerprints(fingerprints: dict, filename="fingerprints.json"):
-    with open(filename, "w") as file:
-        json.dump(fingerprints, file, indent=4)
+        // 🔥 Envoi des données à l'API FASTAPI sur Render
+        const response = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(fingerprint)
+        });
 
-# Fonction pour charger les fingerprints depuis le fichier JSON
-def load_fingerprints(filename="fingerprints.json"):
-    try:
-        with open(filename, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {}
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`);
+        }
 
-# Exemple d'utilisation
-if __name__ == "__main__":
-    # Simulation de données utilisateur de Site1
-    users_data = [
-        {"username": "user1", "ip": "192.168.1.10", "user_agent": "Mozilla/5.0 (Windows)", "session_id": "ABC123"},
-        {"username": "user2", "ip": "192.168.1.15", "user_agent": "Mozilla/5.0 (MacOS)", "session_id": "XYZ789"},
-    ]
+        const data = await response.json();
+        console.log('✅ Empreinte enregistrée avec succès:', data);
 
-    # Générer les fingerprints pour chaque utilisateur
-    fingerprints = {}
-    for user in users_data:
-        fp = generate_fingerprint(user["ip"], user["user_agent"], user["session_id"])
-        fingerprints[user["username"]] = fp
-
-    # Sauvegarde des fingerprints dans un fichier JSON
-    save_fingerprints(fingerprints)
-
-    # Affichage des résultats
-    print("Fingerprints générés et sauvegardés :")
-    print(json.dumps(fingerprints, indent=4))
+    } catch (error) {
+        console.error('❌ Erreur lors de l’envoi de l’empreinte:', error);
+    }
+})();
