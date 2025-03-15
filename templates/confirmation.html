@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation de commande</title>
+</head>
+<body>
+    <h1>Commande confirmée !</h1>
+    <p>Votre commande pour <strong>{{ order.product_name }}</strong> a été validée.</p>
+    <p>Prix : <strong>{{ order.price }}€</strong></p>
+    <form action="{{ url_for('refund') }}" method="POST">
+        <input type="hidden" name="order_id" value="{{ order.order_id }}">
+        <button type="submit">Demander un remboursement</button>
+    </form>
+</body>
+</html>
