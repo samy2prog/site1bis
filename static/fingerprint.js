@@ -7,20 +7,20 @@
         ip_address: await fetch('https://api64.ipify.org?format=json')
             .then(response => response.json())
             .then(data => data.ip)
-            .catch(() => '0.0.0.0'), // Fallback en cas d'échec
+            .catch(() => '0.0.0.0'),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         screen_resolution: `${window.screen.width}x${window.screen.height}`,
         language: navigator.language,
-        account_age: Math.floor(Math.random() * 365), // Simulation d'un âge de compte
-        average_refund_time: Math.random() * 10, // Simulation d'un délai de remboursement
-        payment_attempts: Math.floor(Math.random() * 5), // Nombre aléatoire de tentatives de paiement
-        country_ip: "FR", // Modifier si besoin
-        country_shipping: "FR" // Modifier si besoin
+        account_age: Math.floor(Math.random() * 365),
+        average_refund_time: Math.random() * 10,
+        payment_attempts: Math.floor(Math.random() * 5),
+        country_ip: "FR",
+        country_shipping: "FR"
     };
 
     console.log("📡 Données envoyées à l'API:", fingerprint);
 
-    // Envoyer les données de l'empreinte numérique à l'API
+    // Envoyer l'empreinte numérique
     const responseFingerprint = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,20 +35,24 @@
         return;
     }
 
-    // Simulation d'une transaction (achat ou remboursement)
+    // Récupérer le user_id renvoyé par le serveur
+    const fingerprintId = dataFingerprint.user_id;
+
+    // Simulation d'une transaction
     const transaction = {
         user_agent: fingerprint.user_agent,
         ip_address: fingerprint.ip_address,
         timezone: fingerprint.timezone,
         screen_resolution: fingerprint.screen_resolution,
         language: fingerprint.language,
-        transaction_type: Math.random() > 0.5 ? "purchase" : "refund", // Aléatoire achat/remboursement
-        amount: (Math.random() * 200).toFixed(2) // Montant aléatoire
+        transaction_type: Math.random() > 0.5 ? "purchase" : "refund",
+        amount: parseFloat((Math.random() * 200).toFixed(2)),
+        fingerprint_id: fingerprintId  // AJOUT IMPORTANT
     };
 
     console.log("📡 Données transaction envoyées à l'API:", transaction);
 
-    // Envoyer les transactions
+    // Envoyer la transaction avec le lien vers fingerprint
     const responseTransaction = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/transaction/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
