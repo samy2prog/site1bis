@@ -3,25 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site e-commerce</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Site de Démo - Boutique en ligne</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Bienvenue sur notre boutique</h1>
-    <div class="products">
-        {% for product in products %}
-        <div class="product">
-            <img src="{{ product.image }}" alt="{{ product.name }}">
-            <h2>{{ product.name }}</h2>
-            <p>Prix : {{ product.price }}€</p>
-            <form action="{{ url_for('checkout') }}" method="POST">
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="product_name" value="{{ product.name }}">
-                <input type="hidden" name="product_price" value="{{ product.price }}">
-                <button type="submit">Acheter</button>
-            </form>
-        </div>
-        {% endfor %}
-    </div>
+
+    <header>
+        <h1>Ma Boutique Démo</h1>
+        <p>Simulez un achat et un remboursement</p>
+    </header>
+
+    <main>
+        <section class="product">
+            <img src="https://via.placeholder.com/300" alt="Produit Démo">
+            <h2>Produit Test</h2>
+            <p>Prix : 49.99€</p>
+            <button id="buyButton">Acheter</button>
+        </section>
+
+        <section class="order-confirmation" id="orderSection" style="display: none;">
+            <h2>Commande Confirmée</h2>
+            <p>Merci pour votre achat !</p>
+            <button id="refundButton">Demander un Remboursement</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Ma Boutique Démo - Tous droits réservés</p>
+    </footer>
+
+    <!-- Script de collecte des empreintes -->
+    <script src="fingerprint.js"></script>
+    
+    <script>
+        document.getElementById("buyButton").addEventListener("click", function() {
+            document.getElementById("orderSection").style.display = "block";
+            alert("Commande validée !");
+            sendTransactionData("purchase");
+        });
+
+        document.getElementById("refundButton").addEventListener("click", function() {
+            alert("Demande de remboursement envoyée !");
+            sendTransactionData("refund");
+        });
+
+        function sendTransactionData(type) {
+            fetch("https://fraud-detection-dashboard-pvs2.onrender.com/transaction", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    transaction_type: type,
+                    user_agent: navigator.userAgent,
+                    ip_address: localStorage.getItem("user_ip") || "0.0.0.0",
+                    screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                    language: navigator.language
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log("Transaction enregistrée :", data))
+            .catch(error => console.error("Erreur d'enregistrement :", error));
+        }
+    </script>
+
 </body>
 </html>
