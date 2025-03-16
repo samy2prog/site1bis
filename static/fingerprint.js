@@ -1,7 +1,7 @@
 (async function() {
     console.log("📡 Chargement du script fingerprint.js...");
 
-    // Récupérer les informations du navigateur
+    // Collecte fingerprint
     const fingerprint = {
         user_agent: navigator.userAgent,
         ip_address: await fetch('https://api64.ipify.org?format=json')
@@ -18,9 +18,9 @@
         country_shipping: "FR"
     };
 
-    console.log("📡 Données envoyées à l'API:", fingerprint);
+    console.log("📡 Envoi des données fingerprint:", fingerprint);
 
-    // Envoyer fingerprint
+    // ENVOI FINGERPRINT
     const responseFingerprint = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,11 +31,14 @@
     console.log("✅ Fingerprint stored:", dataFingerprint);
 
     if (!responseFingerprint.ok) {
-        console.error("❌ Erreur lors de l'envoi de l'empreinte:", dataFingerprint);
+        console.error("❌ Erreur lors de l'envoi fingerprint:", dataFingerprint);
         return;
     }
 
-    // Simulation d'une transaction avec le user_id récupéré
+    // Important : récupérer correctement l'ID du fingerprint
+    const fingerprint_id = dataFingerprint.user_id;
+
+    // Simulation transaction
     const transaction = {
         user_agent: fingerprint.user_agent,
         ip_address: fingerprint.ip_address,
@@ -44,12 +47,11 @@
         language: fingerprint.language,
         transaction_type: Math.random() > 0.5 ? "purchase" : "refund",
         amount: parseFloat((Math.random() * 200).toFixed(2)),
-        fingerprint_id: dataFingerprint.user_id  // IMPORTANT : lier l'empreinte à la transaction
+        fingerprint_id: fingerprint_id // ✅ CRUCIAL : bien transmettre ici
     };
 
-    console.log("📡 Données transaction envoyées à l'API:", transaction);
+    console.log("📡 Envoi transaction:", transaction);
 
-    // Envoyer transaction
     const responseTransaction = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/transaction/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -60,6 +62,7 @@
     console.log("✅ Transaction enregistrée :", dataTransaction);
 
     if (!responseTransaction.ok) {
-        console.error("❌ Erreur d'enregistrement de la transaction :", dataTransaction);
+        console.error("❌ Erreur transaction:", dataTransaction);
     }
+
 })();
