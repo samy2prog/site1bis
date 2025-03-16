@@ -1,7 +1,7 @@
 (async function() {
     console.log("📡 Chargement du script fingerprint.js...");
 
-    // Collecte fingerprint
+    // Récupération des infos fingerprint
     const fingerprint = {
         user_agent: navigator.userAgent,
         ip_address: await fetch('https://api64.ipify.org?format=json')
@@ -18,9 +18,9 @@
         country_shipping: "FR"
     };
 
-    console.log("📡 Envoi des données fingerprint:", fingerprint);
+    console.log("📡 Envoi fingerprint:", fingerprint);
 
-    // ENVOI FINGERPRINT
+    // POST fingerprint
     const responseFingerprint = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,10 +35,11 @@
         return;
     }
 
-    // Important : récupérer correctement l'ID du fingerprint
+    // EXTRAIRE le fingerprint_id retourné
     const fingerprint_id = dataFingerprint.user_id;
+    console.log("📎 Empreinte UUID:", fingerprint_id);
 
-    // Simulation transaction
+    // Transaction simulée
     const transaction = {
         user_agent: fingerprint.user_agent,
         ip_address: fingerprint.ip_address,
@@ -47,7 +48,7 @@
         language: fingerprint.language,
         transaction_type: Math.random() > 0.5 ? "purchase" : "refund",
         amount: parseFloat((Math.random() * 200).toFixed(2)),
-        fingerprint_id: fingerprint_id // ✅ CRUCIAL : bien transmettre ici
+        fingerprint_id: fingerprint_id // IMPORTANT : inclure ici !!
     };
 
     console.log("📡 Envoi transaction:", transaction);
