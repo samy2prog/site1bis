@@ -1,5 +1,5 @@
 (async function() {
-    console.log("Chargement du script fingerprint.js...");
+    console.log("📡 Chargement du script fingerprint.js...");
 
     async function getIpAddress() {
         try {
@@ -12,6 +12,7 @@
         }
     }
 
+    // Collecte des infos du navigateur
     const fingerprint = {
         user_agent: navigator.userAgent,
         ip_address: await getIpAddress(),
@@ -25,17 +26,54 @@
         country_shipping: "FR"
     };
 
-    console.log("Données envoyées à l'API:", JSON.stringify(fingerprint));
+    console.log("📡 Données fingerprint envoyées à l'API:", fingerprint);
 
-    fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
+    // 1️⃣ Envoi fingerprint et attends réponse contenant user_id
+    const responseFingerprint = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(fingerprint)
-    })
-    .then(response => response.json())
-    .then(data => console.log('Fingerprint stored:', data))
-    .catch(error => console.error('Erreur lors de l\'enregistrement du fingerprint:', error));
+    });
+
+    const dataFingerprint = await responseFingerprint.json();
+    console.log("✅ Fingerprint stored:", dataFingerprint);
+
+    if (!responseFingerprint.ok) {
+        console.error("❌ Erreur lors de l'envoi de l'empreinte:", dataFingerprint);
+        return;
+    }
+
+    // 2️⃣ Récupère le user_id = fingerprint_id
+    const fingerprint_id = dataFingerprint.user_id;
+    console.log("📌 fingerprint_id:", fingerprint_id);
+
+    // 3️⃣ Prépare la transaction AVEC le fingerprint_id
+    const transaction = {
+        user_agent: fingerprint.user_agent,
+        ip_address: fingerprint.ip_address,
+        timezone: fingerprint.timezone,
+        screen_resolution: fingerprint.screen_resolution,
+        language: fingerprint.language,
+        transaction_type: Math.random() > 0.5 ? "purchase" : "refund",
+        amount: parseFloat((Math.random() * 200).toFixed(2)),
+        fingerprint_id: fingerprint_id
+    };
+
+    console.log("📡 Données transaction envoyées à l'API:", transaction);
+
+    const responseTransaction = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/transaction/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transaction)
+    });
+
+    const dataTransaction = await responseTransaction.json();
+    console.log("✅ Transaction enregistrée :", dataTransaction);
+
+    if (!responseTransaction.ok) {
+        console.error("❌ Erreur d'enregistrement de la transaction :", dataTransaction);
+    }
 })();
 
