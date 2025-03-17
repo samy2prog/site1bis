@@ -25,16 +25,48 @@
         country_shipping: "FR"
     };
 
-    console.log("Données envoyées à l'API:", JSON.stringify(fingerprint));
+    console.log("Données fingerprint envoyées:", fingerprint);
 
-    fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
+    // Envoyer fingerprint
+    const fingerprintResponse = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/collect_fingerprint/', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fingerprint)
-    })
-    .then(response => response.json())
-    .then(data => console.log('Fingerprint stored:', data))
-    .catch(error => console.error('Erreur lors de l\'enregistrement du fingerprint:', error));
+    });
+
+    const fingerprintData = await fingerprintResponse.json();
+    console.log("Fingerprint stored:", fingerprintData);
+
+    if (!fingerprintResponse.ok) {
+        console.error("Erreur lors de l'envoi du fingerprint:", fingerprintData);
+        return;
+    }
+
+    // Simulation transaction
+    const transaction = {
+        user_agent: fingerprint.user_agent,
+        ip_address: fingerprint.ip_address,
+        timezone: fingerprint.timezone,
+        screen_resolution: fingerprint.screen_resolution,
+        language: fingerprint.language,
+        transaction_type: Math.random() > 0.5 ? "purchase" : "refund",
+        amount: (Math.random() * 200).toFixed(2),
+        fingerprint_id: fingerprintData.user_id // 👈 C'est ça la clé !
+    };
+
+    console.log("Transaction envoyée:", transaction);
+
+    const transactionResponse = await fetch('https://fraud-detection-dashboard-pvs2.onrender.com/transaction/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transaction)
+    });
+
+    const transactionData = await transactionResponse.json();
+    console.log("Transaction enregistrée:", transactionData);
+
+    if (!transactionResponse.ok) {
+        console.error("Erreur d'enregistrement de la transaction:", transactionData);
+    }
+
 })();
